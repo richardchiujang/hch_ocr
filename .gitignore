@@ -2,5 +2,8 @@ work/
 weights/
 VerifyKey.exe
 VerifyKey.pyc
-__pycache__/
+license
 
+__pycache__/
+*.py[cod]
+*.so
