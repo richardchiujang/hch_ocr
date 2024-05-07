@@ -1,0 +1,6 @@
+work/
+weights/
+VerifyKey.exe
+VerifyKey.pyc
+__pycache__/
+

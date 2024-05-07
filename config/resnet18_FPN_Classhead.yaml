@@ -1,0 +1,12 @@
+name: ClassNet
+arch:
+  type: Model
+  backbone:
+    type: resnet18
+    pretrained: true
+  neck:
+    type: FPN
+    inner_channels: 256
+  head:
+    type: ClassHead
+    out_channels: 4

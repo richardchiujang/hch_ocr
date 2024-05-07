@@ -1,0 +1,31 @@
+# for crnn mmodel 
+# GPUID: 0
+# WORKERS: 32
+# PRINT_FREQ: 100
+# SAVE_FREQ: 10
+# PIN_MEMORY: True
+# OUTPUT_DIR: 'output'
+
+CUDNN:
+  BENCHMARK: True
+  DETERMINISTIC: False
+  ENABLED: True
+
+DATASET:
+  DATASET: 360CC
+  CHAR_FILE: 'lib/dataset/txt/char_std_zhcn_8000.txt'
+  SCALE_FACTOR: 0.25
+  ROT_FACTOR: 30
+  STD: 0.1979  # 0.193
+  MEAN: 0.8281   # 0.588
+  ALPHABETS: ''
+
+MODEL:
+  NAME: 'crnn'
+  IMAGE_SIZE:
+    OW: 280 # origial width: 280
+    H: 32
+    W: 280   # resized width: 160
+  NUM_CLASSES: 0
+  NUM_HIDDEN: 256
+
