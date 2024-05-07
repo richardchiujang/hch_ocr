@@ -49,4 +49,11 @@ adjust crnn threshold to <= -0.5
 release version : v0.3 2023/09/14
 debug ocr_util.py for reslove one single bbox only doc_image ocr issue, string be process as list because function expect a list
 
+release version : v0.4 2024/04/24
+debug hch_ocr.py for # -*- coding: UTF-8 -*- 造成console中文輸出亂碼(改英文)
+debug 修改文字框後調參數(加大範圍變小)
+update crnn weight file to checkpoint_88_acc_0.9387_0.000006887.pth
+
+ 
+
 
