@@ -511,6 +511,7 @@ def horizon_box_overlap(box1, box2):
 
 
 def vertical_box_overlap(box1, box2):
+    xmin_box1 = xmax_box1 = ymin_box1 = ymax_box1 = xmin_box2 = xmax_box2 = ymin_box2 = ymax_box2 = None 
     x1_box1, y1_box1 = box1[0]
     x2_box1, y2_box1 = box1[1]
     x3_box1, y3_box1 = box1[2]
@@ -612,7 +613,7 @@ def purge_debug_folder():
 
     time.sleep(1)
 
-    print('purge and mkdir work/output/cut_boxes, rotate_boxes, padding_boxes, post_img, inference, ocr_result')
+    # print('purge and mkdir work/output/cut_boxes, rotate_boxes, padding_boxes, post_img, inference, ocr_result')
 
 
 

@@ -13,6 +13,12 @@ python hch_ocr.py --drc_input_folder "work/input_test" --crnn_output_folder "wor
 (說明) --crnn_return "True" 回傳 OCR 結果在 console 中顯示
 (說明) --drc_flag "預設 flase 不做文件方向辨識"
 
+release version : v0.5 2024/05/07
+(說明) --while_mode "True" 時會loop執行，並且變更輸入輸出資料夾位置與邏輯
+(說明) 輸入 請先產生放資料夾的名稱於 ./work/wait_data 下，如 ./work/wait_data/data_folder_001
+(說明) 請再產生一個　.txt 文件於 ./work/wait 資料夾下，名稱為 data_folder_001.txt 不需要內容
+(說明) 系統會將他搬到 ./work/wait_hist 下，然後執行 ./work/wait_data/data_folder_001 下的內容並輸出到此路徑下
+
 example:
 python hch_ocr.py 
 (說明) 什麼參數都沒設定 就只會產生測試OCR結果(文字檔)於預設的 work/output/ocr_result 沒有 debug
@@ -54,6 +60,11 @@ debug hch_ocr.py for # -*- coding: UTF-8 -*- 造成console中文輸出亂碼(改
 debug 修改文字框後調參數(加大範圍變小)
 update crnn weight file to checkpoint_88_acc_0.9387_0.000006887.pth
 
- 
+release version : v0.5 2024/05/08
+add add_argument('--while_mode', default=True, help='while mode for loop program for waiting data True or False(default)')
+add os.makedirs for work/wait wait_hist wait_data
+add while loop
+add main() function for main ocr process to prevent duplicate codes 
+add target file and folder check logic
 
 
