@@ -41,7 +41,7 @@ def init_args():
     parser.add_argument('--ocrdebug', default=False, help='debug mode True or False(default)')
     parser.add_argument('--crnn_return', default=False, help='return result mode True or False(default)')
     parser.add_argument('--log_level', default='info', help='log level debug or info(default)')
-    parser.add_argument('--while_mode', default=True, help='while mode for loop program for waiting data True or False(default)')
+    parser.add_argument('--while_mode', default=False, help='while mode for loop program for waiting data True or False(default)')
     args = parser.parse_args()
     return args
 

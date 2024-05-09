@@ -60,8 +60,8 @@ debug hch_ocr.py for # -*- coding: UTF-8 -*- 造成console中文輸出亂碼(改
 debug 修改文字框後調參數(加大範圍變小)
 update crnn weight file to checkpoint_88_acc_0.9387_0.000006887.pth
 
-release version : v0.5 2024/05/08
-add add_argument('--while_mode', default=True, help='while mode for loop program for waiting data True or False(default)')
+release version : v0.5 2024/05/09
+add add_argument('--while_mode', default=False, help='while mode for loop program for waiting data True or False(default)')
 add os.makedirs for work/wait wait_hist wait_data
 add while loop
 add main() function for main ocr process to prevent duplicate codes 
