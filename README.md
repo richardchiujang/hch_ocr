@@ -67,7 +67,7 @@ add while loop
 add main() function for main ocr process to prevent duplicate codes 
 add target file and folder check logic
 
-release version ; v5.1 2024/05/17
+release version : v5.1 2024/05/17
 change move txt step from pre-process to folder images post-process
 add inside txt indicate wait/file drc_flag=True/False chang flag for temponary chang drc mode 
 
