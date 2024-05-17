@@ -221,6 +221,10 @@ if __name__ == '__main__':
     os.makedirs('work/wait', exist_ok=True)
     os.makedirs('work/wait_hist', exist_ok=True)
     os.makedirs('work/wait_data', exist_ok=True)
+    path_txt = r'.\work\wait'
+    path_to = r'.\work\wait_hist'
+    path_data = r'.\work\wait_data'
+    init_drc_flag = args.drc_flag
 
 
     # licenseVerify = "VerifyKey.pyc"
@@ -242,148 +246,53 @@ if __name__ == '__main__':
         else:
             loop_count = 0
             while True:
-                path = r'.\work\wait'
-                path_to = r'.\work\wait_hist'
-                path_data = r'.\work\wait_data' 
+                if args.drc_flag != init_drc_flag:
+                    args.drc_flag = init_drc_flag # reset drc_flag
+                    log.logger.debug('reset drc_flag args.drc_flag={}'.format(args.drc_flag))
+                else:
+                    pass
                 files, sorted_files = [], []
-                files = os.listdir(path)
-
+                files = os.listdir(path_txt)
                 files = [f for f in files if f.endswith('.txt')]
 
                 if len(files) == 0:
                     # log.logger.debug('no file found in folder: {}'.format(r'.\work\wait'))
                     time.sleep(1)
                     loop_count += 1
-                    if loop_count > 10:
-                        log.logger.debug('wait folder is empty, break loop.')
+                    if loop_count >= 59:
+                        log.logger.debug('wait folder is empty, still wait reset count.')
                         loop_count = 0
                     continue
                 else:
-                    sorted_files = sorted(files, key=lambda x: os.path.getmtime(os.path.join(path, x)))
-                    log.logger.debug('sorted_files: {}'.format(sorted_files))
-                    # print('sorted_files: ', sorted_files)
-                    os.replace(os.path.join(path, sorted_files[0]), os.path.join(path_to, sorted_files[0]))
+                    sorted_files = sorted(files, key=lambda x: os.path.getmtime(os.path.join(path_txt, x)))
+                    log.logger.info('now process file: {}'.format(sorted_files[0]))
+                    # os.replace(os.path.join(path, sorted_files[0]), os.path.join(path_to, sorted_files[0]))  # move behind main() process
+                    check_txt = open(os.path.join(path_txt, sorted_files[0]), 'r')
+                    lines = check_txt.readlines()
+                    for line in lines:
+                        log.logger.debug('check {} line: {}'.format(os.path.join(path_txt, sorted_files[0]), line))
+                        if len(line.strip().split("=")[0]) == 0: # nothing in txt file
+                            pass
+                        elif line.strip().split("=")[0] == 'drc_flag':
+                            args.drc_flag = line.strip().split("=")[1]
+                            log.logger.debug('change drc_flag: {}'.format(args.drc_flag))
+                        else:
+                            pass
+                    check_txt.close()
 
                     if os.path.isdir(os.path.join(path_data, sorted_files[0].split('.txt')[0])):  
                         # target file and folder exist check ok, chang args.drc_input_folder and args.crnn_output_folder
                         args.drc_input_folder = os.path.join(path_data, sorted_files[0].split('.txt')[0])
                         args.crnn_output_folder = args.drc_input_folder
                         log.logger.info('change processing folder: {}'.format(args.drc_input_folder))
-
                         try:
                             main()
                         except:
-                            log.logger.exception("Catch an main() exception.", exc_info=True)
+                            log.logger.exception("Catch an main() exception.", exc_info=True)    
+                    
                     else:
-                        continue
-
+                        pass
+                    
+                    os.replace(os.path.join(path_txt, sorted_files[0]), os.path.join(path_to, sorted_files[0]))  # process done, move to hist folder
     except:
             log.logger.exception("Catch an exception.", exc_info=True)
-            # print('Catch an exception.')
-
-
-
-
-
-                    # for img_path in (get_file_list(args.drc_input_folder, p_postfix=['.jpg','.JPG'])):  # args.drc_input_folder
-                    #     img_path = pathlib.Path(img_path)
-                    #     log.logger.debug('now processing image: {}'.format(img_path))
-                    #     # log.logger.info('now processing image: {}'.format(img_path))
-                    #     # print('............... now processing image {}'.format(img_path))
-                    #     img = cv2imread(img_path)
-                    #     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                    #     imgrotate = img.copy()
-
-                    #     if args.drc_flag == 'True':
-                    #         # print('drc_falg is True, so run drcmodel.')
-                            
-                    #         img224 = cv2.resize(img, (224, 224))
-                    #         if ocrdebug.ocrdebug:
-                    #             im = Image.fromarray(img224)
-                    #             im.save('work/output/post_img/{}_224.jpg'.format(img_path.stem), quality=100, format='JPEG')
-                    #         # with torch.no_grad():
-                    #         # img224arr = torch.from_numpy(img224arr/255).permute(2, 0, 1).unsqueeze(0).float().to(device)
-                    #         img224 = torch.from_numpy(img224/255).permute(2, 0, 1).unsqueeze(0).float().to(device)
-                    #         # 做文件方向的預測與轉向處理
-                    #         drcmodel.eval()  
-                    #         drc_label  = drcmodel(img224).argmax(dim=1).cpu().numpy()[0]
-                    #         log.logger.debug('file: {}, label: {}'.format(img_path, drc_label))
-                    #         imgrotate = rotate_image_up(img, drc_label)
-                    #         if ocrdebug.ocrdebug:
-                    #             im = Image.fromarray(imgrotate)
-                    #             im.save('work/output/post_img/{}_drc.jpg'.format(img_path.stem), quality=100, format='JPEG')
-                    #         # count += 1
-
-                    # # for img_path in (get_file_list(args.dbn_input_folder, p_postfix=['.jpg','.JPG'])):
-                    # # for img_path in (get_file_list(args.input_folder, p_postfix=['.jpg'])): 
-                    #     # 做文字框的預測與後處理   
-                    #     preds, boxes_list, score_list, t = dbnmodel.predict(imgrotate, is_output_polygon=args.polygon, short_size=726)
-                    #     boxes_list, score_list = np.flip(boxes_list, axis=0), np.flip(score_list, axis=0)  # 原輸出是由後到前，轉成由前到後
-                        
-
-                    #     if ocrdebug.ocrdebug:
-                    #         img = draw_bbox(imgrotate, boxes_list)
-                    #         if args.show:
-                    #             show_img(preds)
-                    #             show_img(img, title=os.path.basename(img_path))
-                    #             plt.show()
-                    #         # 保存结果到路径
-                    #         os.makedirs(args.dbn_output_folder, exist_ok=True)
-                    #         img_path = pathlib.Path(img_path)
-                    #         output_path = os.path.join(args.dbn_output_folder, img_path.stem + '_result.jpg')     # _result
-                    #         pred_path = os.path.join(args.dbn_output_folder, img_path.stem + '_pred.jpg')
-                    #         im = Image.fromarray(img)
-                    #         # im.save(output_path, quality=100, format='JPEG')  # output_path  儲存 dbn 預測的文字框彩圖
-                    #         # cv2.imwrite(output_path, img[:, :, ::-1])
-                    #         im = Image.fromarray(preds * 255).convert("RGB")
-                    #         # im.save(pred_path, quality=100, format='JPEG')   # pred_path 儲存 dbn 預測的黑白圖(二元化預測結果)           
-                    #         # cv2.imwrite(pred_path, preds * 255)
-                    #         save_result(output_path.replace('_result.jpg', '.txt'), boxes_list, score_list, args.polygon)  # 儲存文字框座標 .txt
-
-                    #     # 合併文字框
-                    #     new_boxes_list = combine_box(boxes_list)
-                    #     for i in range(2): # 共做 3 次
-                    #         new_boxes_list = combine_box(new_boxes_list)
-
-                    #     if ocrdebug.ocrdebug:
-                    #         # new_boxes_list = combine_box(boxes_list)
-                    #         img = draw_bbox(imgrotate, new_boxes_list)
-                    #         img_path = pathlib.Path(img_path)
-                    #         output_path = os.path.join(args.dbn_output_folder, img_path.stem + '_result_comb.jpg')
-                    #         im = Image.fromarray(img)
-                    #         # im.save(output_path, quality=100, format='JPEG')  # 儲存合併文字框的彩圖
-                    #         pass
-
-                    #     # 剪下文字框
-                    #     # new_boxes_list = sort_boxes(new_boxes_list)
-                    #     transformed_boxes, src_pts, box_directions = cut_boxes(new_boxes_list, imgrotate, img_path.stem)
-                        
-                    #     if ocrdebug.ocrdebug:
-                    #         # img = new_draw_bbox(imgrotate, src_pts, box_directions) # new 垂直文字框 畫藍色框 水平紅框 
-                    #         img = new_draw_bbox(img, src_pts, box_directions) # new 把畫過沒有extention的圖再畫一次extention 垂直文字框 畫藍色框 水平綠框 
-                    #         img_path = pathlib.Path(img_path)
-                    #         output_path = os.path.join(args.dbn_output_folder, img_path.stem + '_result_exten.jpg') # 畫兩次文字框 一個是 combind 一個是 extention
-                    #         im = Image.fromarray(img)
-                    #         im.save(output_path, quality=100, format='JPEG')
-                    #     # 轉向處理
-                    #     transformed_boxes = rotate_cut_boxes(transformed_boxes, img_path.stem)
-                    #     log.logger.debug('rotate transformed_boxes len: {} {}'.format(img_path.stem, len(transformed_boxes)))
-                    #     # 將所有文字框轉成 H=32, W=max(w) 的圖片，高度等比例縮放，寬度補白邊，使用函數 padding_boxes()
-                    #     transformed_boxes, width = padding_boxes(transformed_boxes, img_path.stem)
-                    #     log.logger.debug('padding transformed_boxes len: {} {} {}'.format(img_path.stem, len(transformed_boxes), width))
-
-                    #     if len(transformed_boxes) == 0:
-                    #         log.logger.info('no text box found in image: {}'.format(img_path))
-                    #         continue
-                    #     else:   # args.crnn_output_folder
-                    #         pure_data = crnn_batch_recognition(crnn_config, transformed_boxes, crnn_model, converter, device, args.crnn_output_folder, width, new_boxes_list, box_directions, img_path.stem, mode=args.crnn_mode)
-                    #     if ocrdebug.ocrdebug:
-                    #         # print('pure_data: ', pure_data)
-                    #         pass
-                    #     if args.crnn_return == 'True':
-                    #         print(img_path.stem, pure_data)
-
-
-                    #     count += 1
-                    # tEnd = time.time() # 計時結束
-                    # log.logger.info('job finished. page count {}, cost time {:.2f} sec, tot runtime {:.2f}'.format(count, (tEnd - tStart), (tEnd - timeinit)))
