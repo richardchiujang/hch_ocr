@@ -96,9 +96,9 @@ def cut_boxes(boxes, img, img_name):
     vertical_box_long_side_extend = 2  # 長邊擴大的長度(較小);句子長的邊界擴大像素
     horizon_box_long_side_extend = 2  # 長邊擴大的長度(較小);句子長的邊界擴大像素
 
-    vertical_box_horizon_side_hard_extend = 1  # 短邊擴大長度(較大);字高或字寬的邊界擴大像素
+    vertical_box_horizon_side_hard_extend = 2  # 短邊擴大長度(較大);字高或字寬的邊界擴大像素
     vertical_box_horizon_side_soft_extend = 0  # 短邊擴大長度(較小);字高或字寬的邊界擴大像素(太小的字高或字寬)
-    horizon_box_vertical_side_hard_extend = 1
+    horizon_box_vertical_side_hard_extend = 2
     horizon_box_vertical_side_soft_extend = 0
 
     box_directions = []
@@ -120,24 +120,24 @@ def cut_boxes(boxes, img, img_name):
         # box_direction = None
         box_direction = None
         # 判斷字高(寬度)
-        if vertical_length/horizon_length > 2.:  # [垂直] 如果 H 大於 W 的 "2 倍"，則視為垂直長框(直式)
-            box_direction = 'vertical'
+        if vertical_length/horizon_length > 4.:  # [垂直] 如果 H 大於 W 的 "4 倍"，則視為垂直長框(直式)
+            box_direction = 'vertical' # [垂直]
             vertical_length_extend = vertical_box_long_side_extend  # 垂直框 垂直邊(H) 上下 加寬一點點
-            if horizon_length >= 46:  # 大的文字框，水平邊(W)擴大比例較大
+            if horizon_length >= 42:  # 大的文字框，水平邊(W)擴大比例較大
                 horizon_length_extend = vertical_box_horizon_side_hard_extend  # 垂直框 水平邊(W)擴大比例較大
             else:
                 horizon_length_extend = vertical_box_horizon_side_soft_extend  # 垂直框 水平邊(W)擴大比例較小
         else:   # [水平](橫式)
-            box_direction = 'horizontal'
+            box_direction = 'horizontal' # [水平](橫式)
             horizon_length_extend = horizon_box_long_side_extend  # 水平框 水平邊(H) 左右 加寬一點點
-            if vertical_length >= 46:  # 如果垂直的高度(字高)很大
+            if vertical_length >= 42:  # 如果垂直的高度(字高)很大
                 vertical_length_extend = horizon_box_vertical_side_hard_extend 
             else:  
                 vertical_length_extend = horizon_box_vertical_side_soft_extend # 小字框 加小一點
         # long_edge = horizon_edge
         # short_edge = vertical_edge
 
-        # 根据扩大百分比计算长边和短边的增加量
+        # 根据扩大值計算長邊和短邊的值
         horizon_increase = max(int(horizon_length_extend ), 0) # 增加量，最小为0
         vertical_increase = max(int(vertical_length_extend ), 0) # 增加量，最小为0
         # 取消增加量        
@@ -149,12 +149,12 @@ def cut_boxes(boxes, img, img_name):
             pass
 
         # 扩大原始矩形的四个角点坐标 （按照左上、右上、右下、左下的顺序）, max function avoid negative value
-        src_pts[0] = max(0,src_pts[0][0]-horizon_increase-2)   , max(0,src_pts[0][1]-vertical_increase-2)
-        src_pts[1] = src_pts[1][0]+horizon_increase+2 , max(0,src_pts[1][1]-vertical_increase-2)     # x+2 因為垂直框習慣框線貼字右邊
-        src_pts[2] = src_pts[2][0]+horizon_increase+2 , src_pts[2][1]+vertical_increase+4 
-        src_pts[3] = max(0,src_pts[3][0]-horizon_increase-2)   , src_pts[3][1]+vertical_increase+4   # y+1 因為水平底線緊密，所以多加一點點 
+        src_pts[0] = max(0,src_pts[0][0]-horizon_increase-4)   , max(0,src_pts[0][1]-vertical_increase-4)
+        src_pts[1] = src_pts[1][0]+horizon_increase+4 , max(0,src_pts[1][1]-vertical_increase-4)     # x+2 因為垂直框習慣框線貼字右邊
+        src_pts[2] = src_pts[2][0]+horizon_increase+4 , src_pts[2][1]+vertical_increase+4 
+        src_pts[3] = max(0,src_pts[3][0]-horizon_increase-4)   , src_pts[3][1]+vertical_increase+4   # y+1 因為水平底線緊密，所以多加一點點 
         if ocrdebug.ocrdebug:
-            print('extened src_pts by increase length', [(x,y) for x,y in src_pts])
+            # print('extened src_pts by increase length', [(x,y) for x,y in src_pts])
             pass
 
         # 边界处理，确保坐标不超过原图范围
@@ -171,9 +171,9 @@ def cut_boxes(boxes, img, img_name):
             # print('modify src_pts by np.clip()', [(x,y) for x,y in src_pts])
             pass
 
-        # 计算目标图像的长宽
-        target_width = horizon_length + 2 * horizon_increase+2
-        target_height = vertical_length + 2 * vertical_increase+1
+        # 計算目標框的寬度和高度 原本 + 兩邊(左右兩邊、上下兩邊)擴大量 + 8 (每邊多加4像素)
+        target_width = horizon_length + (2 * horizon_increase) + 8 # 配合上面程式碼的 +4
+        target_height = vertical_length + (2 * vertical_increase) + 8 # 配合上面程式碼的 +4
         
         
         if ocrdebug.ocrdebug:
