@@ -47,6 +47,16 @@ python hch_ocr.py --drc_input_folder "work/input_test" --crnn_mode None --ocrdeb
 (說明) --crnn_return 回傳 OCR 結果在 console 中顯示
 
 
+Q&A:
+drc_input_folder 
+parser.add_argument('--drc_input_folder', default='work/input', type=str, help='img folder path for inference')
+如果你執行時下 --while_mode True 程式邏輯會將 drc_input_folder & crnn_output_folder 替換掉，所以你可以不用加(除非，你是使用 --while_mode False 的舊邏輯(舊邏輯也是可以用的))
+
+crnn_mode 參數有需要加嗎? 答案: 要加
+--crnn_mode 的作用有二: 1."抑制"程式啟動時去處理(刪除) ./work/output 裡面的內容 2.使 args.crnn_output_folder 參數生效，所以要加
+
+
+release note:
 release version : v0.2 2023/09/12 
 finetune dbnet, crnn
 add arg "--drc_flag" for disable drcmodel

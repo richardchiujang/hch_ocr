@@ -93,13 +93,13 @@ def cut_boxes(boxes, img, img_name):
     從輸入文件(圖片)剪下文字框，使用函數 cut_boxes(boxes, img, img_name)
     '''
     transformed_boxes = []
-    vertical_box_long_side_extend = 2  # 长边扩大長度(較小);句子長度的邊界擴大像素
-    horizon_box_long_side_extend = 2
+    vertical_box_long_side_extend = 2  # 長邊擴大的長度(較小);句子長的邊界擴大像素
+    horizon_box_long_side_extend = 2  # 長邊擴大的長度(較小);句子長的邊界擴大像素
 
-    vertical_box_horizon_side_hard_extend = 2  # 短边扩大長度(較大);字高或字寬的邊界擴大像素
-    vertical_box_horizon_side_soft_extend = 1  # 短边扩大長度(較小);字高或字寬的邊界擴大像素(太小的字高或字寬)
-    horizon_box_vertical_side_hard_extend = 2
-    horizon_box_vertical_side_soft_extend = 1
+    vertical_box_horizon_side_hard_extend = 1  # 短邊擴大長度(較大);字高或字寬的邊界擴大像素
+    vertical_box_horizon_side_soft_extend = 0  # 短邊擴大長度(較小);字高或字寬的邊界擴大像素(太小的字高或字寬)
+    horizon_box_vertical_side_hard_extend = 1
+    horizon_box_vertical_side_soft_extend = 0
 
     box_directions = []
     src_out_pts = []
@@ -109,7 +109,6 @@ def cut_boxes(boxes, img, img_name):
         if ocrdebug.ocrdebug:
             # print('左上、右上、右下、左下',[(x,y) for x,y in src_pts])
             pass
-        
 
         # 计算原始矩形框的水平邊和垂直邊的长度
         horizon_length = max(np.linalg.norm(src_pts[0][0] - src_pts[1][0]), np.linalg.norm(src_pts[3][0] - src_pts[2][0]))
@@ -138,33 +137,24 @@ def cut_boxes(boxes, img, img_name):
         # long_edge = horizon_edge
         # short_edge = vertical_edge
 
-
-
-
         # 根据扩大百分比计算长边和短边的增加量
-        
-        
-        
-        
-        
-        # horizon_increase = max(int(horizon_length_extend ), 1) # 增加量，最小为1
-        # vertical_increase = max(int(vertical_length_extend ), 1) # 增加量，最小为1        
-        horizon_increase = 0
-        vertical_increase = 0          
-        
-        
-        
+        horizon_increase = max(int(horizon_length_extend ), 0) # 增加量，最小为0
+        vertical_increase = max(int(vertical_length_extend ), 0) # 增加量，最小为0
+        # 取消增加量        
+        # horizon_increase = 0
+        # vertical_increase = 0          
+
         if ocrdebug.ocrdebug:
             # print('horizon_increase, vertical_increase', horizon_increase, vertical_increase)
             pass
 
-        # 扩大原始矩形的四个角点坐标 （按照左上、右上、右下、左下的顺序）
-        src_pts[0] = src_pts[0][0]-horizon_increase   , src_pts[0][1]-vertical_increase
-        src_pts[1] = src_pts[1][0]+horizon_increase+2 , src_pts[1][1]-vertical_increase     # x+2 因為垂直框習慣框線貼字右邊
-        src_pts[2] = src_pts[2][0]+horizon_increase+2 , src_pts[2][1]+vertical_increase+2 
-        src_pts[3] = src_pts[3][0]-horizon_increase   , src_pts[3][1]+vertical_increase+2   # y+1 因為水平底線緊密，所以多加一點點 
+        # 扩大原始矩形的四个角点坐标 （按照左上、右上、右下、左下的顺序）, max function avoid negative value
+        src_pts[0] = max(0,src_pts[0][0]-horizon_increase-2)   , max(0,src_pts[0][1]-vertical_increase-2)
+        src_pts[1] = src_pts[1][0]+horizon_increase+2 , max(0,src_pts[1][1]-vertical_increase-2)     # x+2 因為垂直框習慣框線貼字右邊
+        src_pts[2] = src_pts[2][0]+horizon_increase+2 , src_pts[2][1]+vertical_increase+4 
+        src_pts[3] = max(0,src_pts[3][0]-horizon_increase-2)   , src_pts[3][1]+vertical_increase+4   # y+1 因為水平底線緊密，所以多加一點點 
         if ocrdebug.ocrdebug:
-            # print('extened src_pts by increase length', [(x,y) for x,y in src_pts])
+            print('extened src_pts by increase length', [(x,y) for x,y in src_pts])
             pass
 
         # 边界处理，确保坐标不超过原图范围
@@ -454,6 +444,8 @@ def combine_box(boxes_list):
 
 def calculate_angle(box):
     p1, p2, p3, p4 = box
+    angle = 0
+    # print('p1, p2, p3, p4, math.atan2(p2[1] - p1[1], p2[0] - p1[0])', p1, p2, p3, p4, math.atan2(p2[1] - p1[1], p2[0] - p1[0]))
     angle = math.degrees(math.atan2(p2[1] - p1[1], p2[0] - p1[0]))
     return angle
 

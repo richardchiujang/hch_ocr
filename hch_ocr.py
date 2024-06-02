@@ -15,62 +15,62 @@ import subprocess, sys
 
 import argparse
 def init_args():
-    parser = argparse.ArgumentParser(description='HCH_OCR.pytorch')
-    parser.add_argument('--drc_config_file', default='config/resnet18_FPN_Classhead.yaml', type=str, help='drcmodel config file')
-    parser.add_argument('--drc_checkpoint_path', default=r'weights/model_validation_Loss_0p036458_Accuracy_0p9927.pth', type=str, help='drcmodel wehight path')
-    parser.add_argument('--drc_flag', default=False, help='drcmodel work or skip, False is skip, True is work, default is False')
-    parser.add_argument('--drc_input_folder', default='work/input', type=str, help='img folder path for inference')
-    # parser.add_argument('--drc_output_folder', default='work/output/inference', type=str, help='img path for output')
-    parser.add_argument('--dbn_model_path', default=r'weights/model_best_recall0940255_precision0967293_hmean0953583_train_loss0673593_best_model_epoch23.pth',
+    parser = argparse.ArgumentParser(description='OCR.pytorch')
+    parser.add_argument('--drc_config_file', default='config/resnet18_FPN_Classhead.yaml', type=str, help='drcmodel config file path')
+    parser.add_argument('--drc_checkpoint_path', default=r'weights/model_validation_Loss_0p036458_Accuracy_0p9927.pth', type=str, help='drcmodel wehight file path')
+    # parser.add_argument('--drc_checkpoint_path', default=r'C:\develop\doc_rotate_classification\model.pth', type=str, help='drcmodel wehight file path')
+    parser.add_argument('--drc_flag', default=True, help='drcmodel enable or disable, False is disable, True is enable, default is False')
+    parser.add_argument('--drc_input_folder', default='work/input', type=str, help='assign img folder path for input path default is work/input')
+    # parser.add_argument('--dbn_model_path', default=r'weights/model_best_recall0940255_precision0967293_hmean0953583_train_loss0673593_best_model_epoch23.pth',
+    parser.add_argument('--dbn_model_path', default=r'C:\develop\DBNet_pytorch_Wenmu\output\DBNet_resnet18_FPN_DBHead\checkpoint\model_best.pth',                        
                         type=str, help='dbnmodel wehight path')
-    # parser.add_argument('--dbn_input_folder', default='work/input', type=str, help='img path for predict')
-    parser.add_argument('--dbn_output_folder', default='work/output/inference', type=str, help='img path for text recongnition output')
-    parser.add_argument('--thre', default=0.5, type=float, help='the thresh of post_processing')
-    parser.add_argument('--polygon', default=False, action='store_true', help='output polygon or box')
-    parser.add_argument('--show', default=False, action='store_true', help='show result')
-    # parser.add_argument('--save_resut', action='store_true', help='save box and score to txt file')  
-    parser.add_argument('--crnn_cfg', type=str, default='lib/config/360CC_config.yaml', help='crnn config file')
-    # parser.add_argument('--crnn_image_path', type=str, default='work/images/', help='the path to your image')
-    # parser.add_argument('--crnn_checkpoint', type=str, default=r'weights/checkpoint_102_acc_0.9867_0.000081000.pth',    
+    parser.add_argument('--dbn_output_folder', default='work/output/inference', type=str, help='img path for ocr result output default is work/output/inference')
+    parser.add_argument('--thre', default=0.5, type=float, help='the threshould of dbn post_processing')
+    parser.add_argument('--polygon', default=False, action='store_true', help='output polygon(not work this version) or box default is False(box)')
+    parser.add_argument('--show', default=False, action='store_true', help='show result on screen default is False')
+    parser.add_argument('--crnn_cfg', type=str, default='lib/config/360CC_config.yaml', help='crnn config file path')
     parser.add_argument('--crnn_checkpoint', type=str, default=r'weights/checkpoint_88_acc_0.9387_0.000006887.pth',
-    # parser.add_argument('--crnn_checkpoint', type=str, default=r'C:\develop\CRNN_Chinese_Characters_Rec\output\360CC\checkpoints\checkpoint_88_acc_0.9387_0.000006887.pth',
-                        help='the path to your crnn checkpoints')
-    parser.add_argument('--crnn_output_folder', type=str, default='work/output/ocr_result', help='redirect the path for crnn output, this is ocr result.')
-    parser.add_argument('--crnn_mode', type=str, default="inference", help='None or inference(default)')
-    parser.add_argument('--device', type=str, default='cpu', help='cuda:0 or cuda or cpu(default)')  
-    parser.add_argument('--ocrdebug', default=False, help='debug mode True or False(default)')
-    parser.add_argument('--crnn_return', default=False, help='return result mode True or False(default)')
-    parser.add_argument('--log_level', default='info', help='log level debug or info(default)')
-    parser.add_argument('--while_mode', default=False, help='while mode for loop program for waiting data True or False(default)')
+                        help='crnn weight path')
+    parser.add_argument('--crnn_output_folder', type=str, default='work/output/ocr_result', 
+                        help='redirect the path for crnn output, this is ocr result. default is work/output/ocr_result')
+    parser.add_argument('--crnn_mode', type=str, default=None, 
+                        help='None or \'inference\'(default) if inference mode then enable crnn_output_folder parameter and disable purge_debug_folder')
+    parser.add_argument('--device', type=str, default='cuda:0', help='\'cuda:0\' or \'cuda\' or \'cpu\'(default)')  
+    parser.add_argument('--ocrdebug', default=True, help='debug mode True or False(default), this will enable debug image in work/output and log file')
+    parser.add_argument('--crnn_return', default=True, help='return result mode True or False(default)')
+    parser.add_argument('--log_level', default='debug', help='log level \'debug\' or \'info\'(default)')
+
+    parser.add_argument('--while_mode', default=False, help='batch mode waiting data in a loop True or False(default)')
     args = parser.parse_args()
     return args
 
 args = init_args()
-# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-# device = torch.device('cpu')
 device = args.device
 hostname = socket.gethostname()
 
 import config.ocrdebug as ocrdebug
-# print('ocrdebug.ocrdebug =', ocrdebug.ocrdebug)
-if args.ocrdebug == 'True':
+if args.ocrdebug:
     ocrdebug.ocrdebug = True
+    print('please use -h to see help message.')
     print('ocrdebug.ocrdebug =', ocrdebug.ocrdebug)
 
 # start build drcmodel
 drc_config = anyconfig.load(open(args.drc_config_file, 'rb'))
-# from utils import strbase64to224array
 from drcmodels import build_model as build_drcmodel
 drc_config['arch']['backbone']['in_channels'] = 3
 drcmodel = build_drcmodel(drc_config['arch'])
 drc_checkpoint = torch.load(args.drc_checkpoint_path, map_location=device)
+if ocrdebug.ocrdebug:
+    print('loading drcmodel pretrained model from {0}'.format(args.drc_checkpoint_path))
+    # log.logger.debug('loading drcmodel pretrained model from {0}'.format(args.drc_checkpoint_path))
 drcmodel.load_state_dict(drc_checkpoint)
-# print('load drcmodel checkpoint')
 drcmodel = drcmodel.to(device)
 drcmodel.eval()
 
 # start build dbnmodel if cpu then gpu_id=None
 dbnmodel = Dbn_model(args.dbn_model_path, post_p_thre=args.thre, gpu_id=None)
+if ocrdebug.ocrdebug:
+    print('loading dbnmodel pretrained model from {0}'.format(args.dbn_model_path))
 
 
 with open(args.crnn_cfg, 'r', encoding='utf-8') as f:
@@ -85,7 +85,7 @@ import lib.models.crnn as crnn
 from lib.utils.utils import strLabelConverter
 crnn_model = crnn.get_crnn(crnn_config).to(device)
 if ocrdebug.ocrdebug:
-    print('loading pretrained model from {0}'.format(args.crnn_checkpoint))
+    print('loading crnn_model pretrained model from {0}'.format(args.crnn_checkpoint))
 crnn_checkpoint = torch.load(args.crnn_checkpoint, map_location=device)
 crnn_model.load_state_dict(crnn_checkpoint['state_dict'])
 crnn_model.eval()
@@ -106,21 +106,18 @@ def main():
     for img_path in (get_file_list(args.drc_input_folder, p_postfix=['.jpg','.JPG'])):  # args.drc_input_folder
         img_path = pathlib.Path(img_path)
         log.logger.debug('now processing image: {}'.format(img_path))
-        # log.logger.info('now processing image: {}'.format(img_path))
-        # print('............... now processing image {}'.format(img_path))
         img = cv2imread(img_path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         imgrotate = img.copy()
 
-        if args.drc_flag == 'True':
-            # print('drc_falg is True, so run drcmodel.')
+        if args.drc_flag:
+            log.logger.debug('drc_falg is True, drcmodel enable.')
             
             img224 = cv2.resize(img, (224, 224))
             if ocrdebug.ocrdebug:
                 im = Image.fromarray(img224)
                 im.save('work/output/post_img/{}_224.jpg'.format(img_path.stem), quality=100, format='JPEG')
-            # with torch.no_grad():
-            # img224arr = torch.from_numpy(img224arr/255).permute(2, 0, 1).unsqueeze(0).float().to(device)
+
             img224 = torch.from_numpy(img224/255).permute(2, 0, 1).unsqueeze(0).float().to(device)
             # 做文件方向的預測與轉向處理
             drcmodel.eval()  
@@ -128,6 +125,10 @@ def main():
             log.logger.debug('file: {}, label: {}'.format(img_path, drc_label))
             imgrotate = rotate_image_up(img, drc_label)
             if ocrdebug.ocrdebug:
+                # print('rotate image: ', drc_label)
+                if drc_label != 0:
+                    # print('rotate image: ', drc_label)
+                    log.logger.debug('rotate image by drc_label: {}'.format(drc_label))
                 im = Image.fromarray(imgrotate)
                 im.save('work/output/post_img/{}_drc.jpg'.format(img_path.stem), quality=100, format='JPEG')
             # count += 1
@@ -156,6 +157,8 @@ def main():
             im = Image.fromarray(preds * 255).convert("RGB")
             # im.save(pred_path, quality=100, format='JPEG')   # pred_path 儲存 dbn 預測的黑白圖(二元化預測結果)           
             # cv2.imwrite(pred_path, preds * 255)
+            if args.polygon:
+                args.polygon=False # disable polygon or error
             save_result(output_path.replace('_result.jpg', '.txt'), boxes_list, score_list, args.polygon)  # 儲存文字框座標 .txt
 
         # 合併文字框
@@ -196,9 +199,9 @@ def main():
         else:   # args.crnn_output_folder
             pure_data = crnn_batch_recognition(crnn_config, transformed_boxes, crnn_model, converter, device, args.crnn_output_folder, width, new_boxes_list, box_directions, img_path.stem, mode=args.crnn_mode)
         if ocrdebug.ocrdebug:
-            # print('pure_data: ', pure_data)
+            log.logger.debug('ocr result: {} len {}'.format(img_path, len(pure_data)))
             pass
-        if args.crnn_return == 'True':
+        if args.crnn_return:
             print(img_path.stem, pure_data)
 
 
@@ -214,9 +217,13 @@ if __name__ == '__main__':
     log.logger.info('ocrdebug.ocrdebug: {}'.format(ocrdebug.ocrdebug))
     log.logger.info('crnn_mode: {}'.format(args.crnn_mode))
     log.logger.debug('all args: {}'.format(args))
-    if args.crnn_mode != "inference":
+    if args.crnn_mode != 'inference' and args.ocrdebug:
         purge_debug_folder()
         log.logger.info('purge_debug_folder: purge and mkdir work/output/cut_boxes, rotate_boxes, padding_boxes, post_img, inference, ocr_result')
+    if ocrdebug.ocrdebug:
+        log.logger.debug('loading drcmodel pretrained model from {0}'.format(args.drc_checkpoint_path))
+        log.logger.debug('loading dbnmodel pretrained model from {0}'.format(args.dbn_model_path))
+        log.logger.debug('loading crnn_model pretrained model from {0}'.format(args.crnn_checkpoint))
     
     os.makedirs('work/wait', exist_ok=True)
     os.makedirs('work/wait_hist', exist_ok=True)
@@ -238,7 +245,7 @@ if __name__ == '__main__':
     # print("LICENSE VALID!")
 
     try:
-        if args.while_mode == False:
+        if not args.while_mode:
             try:
                 main()
             except:
