@@ -17,38 +17,35 @@ import argparse
 def init_args():
     parser = argparse.ArgumentParser(description='OCR.pytorch')
     parser.add_argument('--drc_config_file', default='config/resnet18_FPN_Classhead.yaml', type=str, help='drcmodel config file path')
-    # parser.add_argument('--drc_checkpoint_path', default=r'weights/model_validation_Loss_0p036458_Accuracy_0p9927.pth', type=str, help='drcmodel wehight file path')
-    parser.add_argument('--drc_checkpoint_path', default=r'C:\develop\doc_rotate_classification\output\model.pth', type=str, help='drcmodel wehight file path')
+    parser.add_argument('--drc_checkpoint_path', default=r'weights/drc_model_testphaseLoss0p066Accuracy0p983.pth', type=str, help='drcmodel wehight file path')
+    # parser.add_argument('--drc_checkpoint_path', default=r'C:\develop\doc_rotate_classification\output\model.pth', type=str, help='drcmodel wehight file path')
     parser.add_argument('--drc_flag', default=False, action=argparse.BooleanOptionalAction, help='document direction drcmodel enable or disable')
     parser.add_argument('--drc_input_folder', default='work/input', type=str, help='assign img folder path for input path default is work/input')
-    # parser.add_argument('--dbn_model_path', default=r'weights/model_best_recall0940255_precision0967293_hmean0953583_train_loss0673593_best_model_epoch23.pth',
-    parser.add_argument('--dbn_model_path', default=r'C:\develop\DBNet_pytorch_Wenmu\output\DBNet_resnet18_FPN_DBHead\checkpoint\model_best_e14_h0.7422459843924701_l0.7988005305329958.pth',                        
+    parser.add_argument('--dbn_model_path', default=r'weights/dbn_model_best_e46_h0p9149915183758589_l0p6437240391969681.pth',
+    # parser.add_argument('--dbn_model_path', default=r'C:\develop\DBNet_pytorch_Wenmu\output\DBNet_resnet18_FPN_DBHead\checkpoint\model_best_e14_h0.7422459843924701_l0.7988005305329958.pth',                        
                         type=str, help='dbnmodel wehight path')
     parser.add_argument('--dbn_output_folder', default='work/output/inference', type=str, help='img path for ocr result output default is work/output/inference')
     parser.add_argument('--thre', default=0.5, type=float, help='the threshould of dbn post_processing')
     parser.add_argument('--polygon', default=False, action=argparse.BooleanOptionalAction, help='output polygon(not work this version)')
     parser.add_argument('--show', default=False, action=argparse.BooleanOptionalAction, help='show result on screen')
     parser.add_argument('--crnn_cfg', type=str, default='lib/config/360CC_config.yaml', help='crnn config file path')
-    # parser.add_argument('--crnn_checkpoint', type=str, default=r'weights/checkpoint_88_acc_0.9387_0.000006887.pth',
-    parser.add_argument('--crnn_checkpoint', type=str, default=r'C:\develop\CRNN_Chinese_Characters_Rec\output\360CC\checkpoints\checkpoint_96_acc_0.9420_0.000034300.pth',                       
+    parser.add_argument('--crnn_checkpoint', type=str, default=r'weights/crnn_checkpoint_96_acc_0p9420_0p000034300.pth',
+    # parser.add_argument('--crnn_checkpoint', type=str, default=r'C:\develop\CRNN_Chinese_Characters_Rec\output\360CC\checkpoints\checkpoint_96_acc_0.9420_0.000034300.pth',                       
                         help='crnn weight path')
     parser.add_argument('--crnn_output_folder', type=str, default='work/output/ocr_result', 
                         help='redirect the path for crnn output, this is ocr result. default is work/output/ocr_result')
     parser.add_argument('--crnn_mode', type=str, default=None, 
                         help='None or \'inference\'(default) if inference mode then enable crnn_output_folder parameter and disable purge_debug_folder')
     parser.add_argument('--device', type=str, default='cpu', help='\'cuda:0\' or \'cuda\' or \'cpu\'(default)')  
-    parser.add_argument('--ocrdebug', default=True, action=argparse.BooleanOptionalAction, help='debug mode True, this will enable purge image and log file in work/output')
-    parser.add_argument('--crnn_return', default=True, action=argparse.BooleanOptionalAction, help='return result mode True')
+    parser.add_argument('--ocrdebug', default=False, action=argparse.BooleanOptionalAction, help='debug mode True, this will enable purge image and log file in work/output')
+    parser.add_argument('--crnn_return', default=False, action=argparse.BooleanOptionalAction, help='return result mode True')
     parser.add_argument('--log_level', default='info', help='log level \'debug\' or \'info\'(default)')
-
     parser.add_argument('--while_mode', default=False, action=argparse.BooleanOptionalAction, help='batch mode waiting data in a loop')
     args = parser.parse_args()
     return args
 
 args = init_args()
 device = args.device
-
-
 hostname = socket.gethostname()
 
 import config.ocrdebug as ocrdebug
@@ -56,7 +53,6 @@ if args.ocrdebug:
     ocrdebug.ocrdebug = True
     print('please use -h to see help message.')
     print('ocrdebug.ocrdebug =', ocrdebug.ocrdebug)
-
 
 # start build drcmodel
 drc_config = anyconfig.load(open(args.drc_config_file, 'rb'))
@@ -75,7 +71,6 @@ drcmodel.eval()
 dbnmodel = Dbn_model(args.dbn_model_path, post_p_thre=args.thre, gpu_id=None)
 if ocrdebug.ocrdebug:
     print('loading dbnmodel pretrained model from {0}'.format(args.dbn_model_path))
-
 
 with open(args.crnn_cfg, 'r', encoding='utf-8') as f:
     crnn_config = yaml.load(f, Loader=yaml.FullLoader)
@@ -143,7 +138,6 @@ def main():
         preds, boxes_list, score_list, t = dbnmodel.predict(imgrotate, is_output_polygon=args.polygon, short_size=726)
         boxes_list, score_list = np.flip(boxes_list, axis=0), np.flip(score_list, axis=0)  # 原輸出是由後到前，轉成由前到後
         
-
         if ocrdebug.ocrdebug:
             img = draw_bbox(imgrotate, boxes_list)
             if args.show:
@@ -208,8 +202,6 @@ def main():
             pass
         if args.crnn_return:
             print(img_path.stem, pure_data)
-
-
         count += 1
     tEnd = time.time() # 計時結束
     log.logger.info('job finished. page count {}, cost time {:.2f} sec, tot runtime {:.2f}'.format(count, (tEnd - tStart), (tEnd - timeinit)))
@@ -237,7 +229,6 @@ if __name__ == '__main__':
     path_to = r'.\work\wait_hist'
     path_data = r'.\work\wait_data'
     init_drc_flag = args.drc_flag
-
 
     # licenseVerify = "VerifyKey.pyc"
     # if not os.path.exists(licenseVerify):

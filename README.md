@@ -50,6 +50,9 @@ usage: hch_ocr.py [-h] [--drc_config_file DRC_CONFIG_FILE] [--drc_checkpoint_pat
                   [--dbn_output_folder DBN_OUTPUT_FOLDER] [--thre THRE] [--polygon | --no-polygon] [--show | --no-show] [--crnn_cfg CRNN_CFG] [--crnn_checkpoint CRNN_CHECKPOINT]
                   [--crnn_output_folder CRNN_OUTPUT_FOLDER] [--crnn_mode CRNN_MODE] [--device DEVICE] [--ocrdebug | --no-ocrdebug] [--crnn_return | --no-crnn_return] [--log_level LOG_LEVEL]
                   [--while_mode | --no-while_mode]
+
+demo example: python hch_ocr.py --drc_flag --ocrdebug --crnn_return --log_level debug 
+
 options:
   -h, --help            show this help message and exit
   --drc_config_file DRC_CONFIG_FILE
