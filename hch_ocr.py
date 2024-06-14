@@ -17,35 +17,38 @@ import argparse
 def init_args():
     parser = argparse.ArgumentParser(description='OCR.pytorch')
     parser.add_argument('--drc_config_file', default='config/resnet18_FPN_Classhead.yaml', type=str, help='drcmodel config file path')
-    parser.add_argument('--drc_checkpoint_path', default=r'weights/model_validation_Loss_0p036458_Accuracy_0p9927.pth', type=str, help='drcmodel wehight file path')
-    # parser.add_argument('--drc_checkpoint_path', default=r'C:\develop\doc_rotate_classification\model.pth', type=str, help='drcmodel wehight file path')
-    parser.add_argument('--drc_flag', default=True, help='drcmodel enable or disable, False is disable, True is enable, default is False')
+    # parser.add_argument('--drc_checkpoint_path', default=r'weights/model_validation_Loss_0p036458_Accuracy_0p9927.pth', type=str, help='drcmodel wehight file path')
+    parser.add_argument('--drc_checkpoint_path', default=r'C:\develop\doc_rotate_classification\output\model.pth', type=str, help='drcmodel wehight file path')
+    parser.add_argument('--drc_flag', default=False, action=argparse.BooleanOptionalAction, help='document direction drcmodel enable or disable')
     parser.add_argument('--drc_input_folder', default='work/input', type=str, help='assign img folder path for input path default is work/input')
     # parser.add_argument('--dbn_model_path', default=r'weights/model_best_recall0940255_precision0967293_hmean0953583_train_loss0673593_best_model_epoch23.pth',
-    parser.add_argument('--dbn_model_path', default=r'C:\develop\DBNet_pytorch_Wenmu\output\DBNet_resnet18_FPN_DBHead\checkpoint\model_best.pth',                        
+    parser.add_argument('--dbn_model_path', default=r'C:\develop\DBNet_pytorch_Wenmu\output\DBNet_resnet18_FPN_DBHead\checkpoint\model_best_e14_h0.7422459843924701_l0.7988005305329958.pth',                        
                         type=str, help='dbnmodel wehight path')
     parser.add_argument('--dbn_output_folder', default='work/output/inference', type=str, help='img path for ocr result output default is work/output/inference')
     parser.add_argument('--thre', default=0.5, type=float, help='the threshould of dbn post_processing')
-    parser.add_argument('--polygon', default=False, action='store_true', help='output polygon(not work this version) or box default is False(box)')
-    parser.add_argument('--show', default=False, action='store_true', help='show result on screen default is False')
+    parser.add_argument('--polygon', default=False, action=argparse.BooleanOptionalAction, help='output polygon(not work this version)')
+    parser.add_argument('--show', default=False, action=argparse.BooleanOptionalAction, help='show result on screen')
     parser.add_argument('--crnn_cfg', type=str, default='lib/config/360CC_config.yaml', help='crnn config file path')
-    parser.add_argument('--crnn_checkpoint', type=str, default=r'weights/checkpoint_88_acc_0.9387_0.000006887.pth',
+    # parser.add_argument('--crnn_checkpoint', type=str, default=r'weights/checkpoint_88_acc_0.9387_0.000006887.pth',
+    parser.add_argument('--crnn_checkpoint', type=str, default=r'C:\develop\CRNN_Chinese_Characters_Rec\output\360CC\checkpoints\checkpoint_96_acc_0.9420_0.000034300.pth',                       
                         help='crnn weight path')
     parser.add_argument('--crnn_output_folder', type=str, default='work/output/ocr_result', 
                         help='redirect the path for crnn output, this is ocr result. default is work/output/ocr_result')
     parser.add_argument('--crnn_mode', type=str, default=None, 
                         help='None or \'inference\'(default) if inference mode then enable crnn_output_folder parameter and disable purge_debug_folder')
-    parser.add_argument('--device', type=str, default='cuda:0', help='\'cuda:0\' or \'cuda\' or \'cpu\'(default)')  
-    parser.add_argument('--ocrdebug', default=True, help='debug mode True or False(default), this will enable debug image in work/output and log file')
-    parser.add_argument('--crnn_return', default=True, help='return result mode True or False(default)')
-    parser.add_argument('--log_level', default='debug', help='log level \'debug\' or \'info\'(default)')
+    parser.add_argument('--device', type=str, default='cpu', help='\'cuda:0\' or \'cuda\' or \'cpu\'(default)')  
+    parser.add_argument('--ocrdebug', default=True, action=argparse.BooleanOptionalAction, help='debug mode True, this will enable purge image and log file in work/output')
+    parser.add_argument('--crnn_return', default=True, action=argparse.BooleanOptionalAction, help='return result mode True')
+    parser.add_argument('--log_level', default='info', help='log level \'debug\' or \'info\'(default)')
 
-    parser.add_argument('--while_mode', default=False, help='batch mode waiting data in a loop True or False(default)')
+    parser.add_argument('--while_mode', default=False, action=argparse.BooleanOptionalAction, help='batch mode waiting data in a loop')
     args = parser.parse_args()
     return args
 
 args = init_args()
 device = args.device
+
+
 hostname = socket.gethostname()
 
 import config.ocrdebug as ocrdebug
@@ -53,6 +56,7 @@ if args.ocrdebug:
     ocrdebug.ocrdebug = True
     print('please use -h to see help message.')
     print('ocrdebug.ocrdebug =', ocrdebug.ocrdebug)
+
 
 # start build drcmodel
 drc_config = anyconfig.load(open(args.drc_config_file, 'rb'))
@@ -93,7 +97,7 @@ converter = strLabelConverter(crnn_config.DATASET.ALPHABETS)
 
 from utils.ocr_util import crnn_batch_recognition #, crnn_recognition
 
-from utils.ocr_util import cv2imread, rotate_image_up, cut_boxes, rotate_cut_boxes
+from utils.ocr_util import cv2imread, rotate_image_up, cut_boxes, rotate_cut_boxes, img_padding
 from utils.ocr_util import padding_boxes, purge_debug_folder, combine_box, sort_boxes
 from utils.util import show_img, draw_bbox, save_result, get_file_list, new_draw_bbox
 
@@ -112,8 +116,8 @@ def main():
 
         if args.drc_flag:
             log.logger.debug('drc_falg is True, drcmodel enable.')
-            
-            img224 = cv2.resize(img, (224, 224))
+            img224 = img_padding(img)
+            img224 = cv2.resize(img224, (224, 224))
             if ocrdebug.ocrdebug:
                 im = Image.fromarray(img224)
                 im.save('work/output/post_img/{}_224.jpg'.format(img_path.stem), quality=100, format='JPEG')
@@ -159,7 +163,8 @@ def main():
             # cv2.imwrite(pred_path, preds * 255)
             if args.polygon:
                 args.polygon=False # disable polygon or error
-            save_result(output_path.replace('_result.jpg', '.txt'), boxes_list, score_list, args.polygon)  # 儲存文字框座標 .txt
+
+            # save_result(output_path.replace('_result.jpg', '.txt'), boxes_list, score_list, args.polygon)  # 儲存文字框座標 .txt 暫關掉
 
         # 合併文字框
         new_boxes_list = combine_box(boxes_list)

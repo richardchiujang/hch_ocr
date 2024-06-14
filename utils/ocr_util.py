@@ -19,13 +19,13 @@ def cv2imread(img_path):
 def cv2imwrite(filename, img):
     cv2.imencode('.jpg', img)[1].tofile(filename) 
 
-
-
-
-
-
-
-
+def img_padding(img):
+    h, w = img.shape[:2]
+    if h > w:
+        img = cv2.copyMakeBorder(img, 0, 0, 0, h-w, cv2.BORDER_CONSTANT, value=(128,128,128))   # top, bottom, left, right
+    elif w > h:
+        img = cv2.copyMakeBorder(img, 0, w-h, 0, 0, cv2.BORDER_CONSTANT, value=(128,128,128))
+    return img
 
 def rotate_image_up(imgori, drc_label):
     '''
@@ -93,12 +93,12 @@ def cut_boxes(boxes, img, img_name):
     從輸入文件(圖片)剪下文字框，使用函數 cut_boxes(boxes, img, img_name)
     '''
     transformed_boxes = []
-    vertical_box_long_side_extend = 2  # 長邊擴大的長度(較小);句子長的邊界擴大像素
-    horizon_box_long_side_extend = 2  # 長邊擴大的長度(較小);句子長的邊界擴大像素
+    vertical_box_long_side_extend = 6  # 長邊擴大的長度(較小);句子長的邊界擴大像素
+    horizon_box_long_side_extend = 6  # 長邊擴大的長度(較小);句子長的邊界擴大像素
 
-    vertical_box_horizon_side_hard_extend = 2  # 短邊擴大長度(較大);字高或字寬的邊界擴大像素
+    vertical_box_horizon_side_hard_extend = 6  # 短邊擴大長度(較大);字高或字寬的邊界擴大像素
     vertical_box_horizon_side_soft_extend = 0  # 短邊擴大長度(較小);字高或字寬的邊界擴大像素(太小的字高或字寬)
-    horizon_box_vertical_side_hard_extend = 2
+    horizon_box_vertical_side_hard_extend = 6
     horizon_box_vertical_side_soft_extend = 0
 
     box_directions = []
@@ -149,10 +149,11 @@ def cut_boxes(boxes, img, img_name):
             pass
 
         # 扩大原始矩形的四个角点坐标 （按照左上、右上、右下、左下的顺序）, max function avoid negative value
-        src_pts[0] = max(0,src_pts[0][0]-horizon_increase-4)   , max(0,src_pts[0][1]-vertical_increase-4)
-        src_pts[1] = src_pts[1][0]+horizon_increase+4 , max(0,src_pts[1][1]-vertical_increase-4)     # x+2 因為垂直框習慣框線貼字右邊
-        src_pts[2] = src_pts[2][0]+horizon_increase+4 , src_pts[2][1]+vertical_increase+4 
-        src_pts[3] = max(0,src_pts[3][0]-horizon_increase-4)   , src_pts[3][1]+vertical_increase+4   # y+1 因為水平底線緊密，所以多加一點點 
+        ext_pix = 5
+        src_pts[0] = max(0,src_pts[0][0]-horizon_increase-ext_pix)   , max(0,src_pts[0][1]-vertical_increase-ext_pix)
+        src_pts[1] = src_pts[1][0]+horizon_increase+ext_pix , max(0,src_pts[1][1]-vertical_increase-ext_pix)     # x+2 因為垂直框習慣框線貼字右邊
+        src_pts[2] = src_pts[2][0]+horizon_increase+ext_pix , src_pts[2][1]+vertical_increase+ext_pix 
+        src_pts[3] = max(0,src_pts[3][0]-horizon_increase-ext_pix)   , src_pts[3][1]+vertical_increase+ext_pix   # y+1 因為水平底線緊密，所以多加一點點 
         if ocrdebug.ocrdebug:
             # print('extened src_pts by increase length', [(x,y) for x,y in src_pts])
             pass
@@ -172,8 +173,8 @@ def cut_boxes(boxes, img, img_name):
             pass
 
         # 計算目標框的寬度和高度 原本 + 兩邊(左右兩邊、上下兩邊)擴大量 + 8 (每邊多加4像素)
-        target_width = horizon_length + (2 * horizon_increase) + 8 # 配合上面程式碼的 +4
-        target_height = vertical_length + (2 * vertical_increase) + 8 # 配合上面程式碼的 +4
+        target_width = horizon_length + (2 * horizon_increase) + ext_pix * 2 # 配合上面程式碼的 +4
+        target_height = vertical_length + (2 * vertical_increase) + ext_pix * 2 # 配合上面程式碼的 +4
         
         
         if ocrdebug.ocrdebug:
@@ -381,10 +382,14 @@ def crnn_batch_recognition(config, imgs, model, converter, device, crnn_output_f
     else:
         output_filename = r'work/output/ocr_result/{}.txt'.format(img_name)
     with open(output_filename, 'w', encoding='utf-8') as f:
-    
         for res in pure_data:
             f.write('{}\n'.format(res))
-            
+
+    if ocrdebug.ocrdebug:
+        output_filename = r'work/output/inference/{}_ocr.txt'.format(img_name)
+        with open(output_filename, 'w', encoding='utf-8') as f:
+            for res in pure_data:
+                f.write('{}\n'.format(res))            
             
         # for i, result in enumerate(sorted_data):
         #     f.write('{}\n'.format(result[4:]))
