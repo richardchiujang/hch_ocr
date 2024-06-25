@@ -44,7 +44,7 @@ trainer:
   log_iter: 10
   show_images_iter: 500
   resume_checkpoint: ''
-  finetune_checkpoint: 'weights/model_best_current best, recall 0.941087, precision 0.968583, hmean 0.954637, train_loss 0.727707, best_model_epoch 66_mix.pth'
+  finetune_checkpoint: ''
   output_dir: output
   tensorboard: true
 dataset:
@@ -68,7 +68,7 @@ dataset:
         pre_processes:
           - type: ResizeShortSize
             args:
-              short_size: 736
+              short_size: 1024
               resize_text_polys: false
         img_mode: RGB
     loader:

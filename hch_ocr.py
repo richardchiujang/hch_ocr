@@ -21,16 +21,16 @@ def init_args():
     # parser.add_argument('--drc_checkpoint_path', default=r'C:\develop\doc_rotate_classification\output\model.pth', type=str, help='drcmodel wehight file path')
     parser.add_argument('--drc_flag', default=False, action=argparse.BooleanOptionalAction, help='document direction drcmodel enable or disable')
     parser.add_argument('--drc_input_folder', default='work/input', type=str, help='assign img folder path for input path default is work/input')
-    parser.add_argument('--dbn_model_path', default=r'weights/dbn_model_best_e46_h0p9149915183758589_l0p6437240391969681.pth',
-    # parser.add_argument('--dbn_model_path', default=r'C:\develop\DBNet_pytorch_Wenmu\output\DBNet_resnet18_FPN_DBHead\checkpoint\model_best_e14_h0.7422459843924701_l0.7988005305329958.pth',                        
+    # parser.add_argument('--dbn_model_path', default=r'weights/dbn_model_best_e4_h0p684507037728362_l1p439903035575961.pth',
+    parser.add_argument('--dbn_model_path', default=r'C:\develop\DBNet_pytorch_Wenmu\output\DBNet_resnet18_FPN_DBHead\checkpoint\dbn_model_best_e19_h0.8956742952820212_l0.864123656425947.pth',                        
                         type=str, help='dbnmodel wehight path')
     parser.add_argument('--dbn_output_folder', default='work/output/inference', type=str, help='img path for ocr result output default is work/output/inference')
     parser.add_argument('--thre', default=0.5, type=float, help='the threshould of dbn post_processing')
     parser.add_argument('--polygon', default=False, action=argparse.BooleanOptionalAction, help='output polygon(not work this version)')
     parser.add_argument('--show', default=False, action=argparse.BooleanOptionalAction, help='show result on screen')
     parser.add_argument('--crnn_cfg', type=str, default='lib/config/360CC_config.yaml', help='crnn config file path')
-    parser.add_argument('--crnn_checkpoint', type=str, default=r'weights/crnn_checkpoint_96_acc_0p9420_0p000034300.pth',
-    # parser.add_argument('--crnn_checkpoint', type=str, default=r'C:\develop\CRNN_Chinese_Characters_Rec\output\360CC\checkpoints\checkpoint_96_acc_0.9420_0.000034300.pth',                       
+    parser.add_argument('--crnn_checkpoint', type=str, default=r'weights/crnn_checkpoint_123_acc_0.9812_0.000004900.pth',
+    # parser.add_argument('--crnn_checkpoint', type=str, default=r'C:\develop\CRNN_Chinese_Characters_Rec\output\360CC\checkpoints\checkpoint_123_acc_0.9812_0.000004900.pth',                       
                         help='crnn weight path')
     parser.add_argument('--crnn_output_folder', type=str, default='work/output/ocr_result', 
                         help='redirect the path for crnn output, this is ocr result. default is work/output/ocr_result')

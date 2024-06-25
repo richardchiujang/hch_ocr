@@ -149,7 +149,7 @@ def cut_boxes(boxes, img, img_name):
             pass
 
         # 扩大原始矩形的四个角点坐标 （按照左上、右上、右下、左下的顺序）, max function avoid negative value
-        ext_pix = 4     # 總共比對 Target 檔案 139 個, 平均比對成功率為: 78.99% when ext_pix = 4
+        ext_pix = 4     # 4
         src_pts[0] = max(0,src_pts[0][0]-horizon_increase-ext_pix)   , max(0,src_pts[0][1]-vertical_increase-ext_pix)
         src_pts[1] = src_pts[1][0]+horizon_increase+ext_pix , max(0,src_pts[1][1]-vertical_increase-ext_pix)     # x+2 因為垂直框習慣框線貼字右邊
         src_pts[2] = src_pts[2][0]+horizon_increase+ext_pix , src_pts[2][1]+vertical_increase+ext_pix 
