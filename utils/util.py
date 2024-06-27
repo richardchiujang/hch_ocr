@@ -28,19 +28,24 @@ def get_file_list(folder_path: str, p_postfix: list = None, sub_dir: bool = True
                  os.path.splitext(x)[-1] in p_postfix or '.*' in p_postfix]
     return natsorted(file_list)
 
-
-def setup_logger(log_file_path: str = None):
+### 2024-06-27 因整合windows服務console log會發生錯誤, 透過參數控制是否整合服務 
+def setup_logger(log_file_path: str = None, integrate_svc: bool = False):
     import logging
     logging._warn_preinit_stderr = 0
     logger = logging.getLogger('DBNet.pytorch')
     formatter = logging.Formatter('%(asctime)s %(name)s %(levelname)s: %(message)s')
-    ch = logging.StreamHandler()
-    ch.setFormatter(formatter)
-    logger.addHandler(ch)
+    if integrate_svc:
+       pass
+    else:
+       ch = logging.StreamHandler()
+       ch.setFormatter(formatter)
+       logger.addHandler(ch)
+    
     if log_file_path is not None:
         file_handle = logging.FileHandler(log_file_path)
         file_handle.setFormatter(formatter)
         logger.addHandler(file_handle)
+    
     logger.setLevel(logging.DEBUG)
     return logger
 

@@ -3,6 +3,8 @@ weights/
 VerifyKey.exe
 VerifyKey.pyc
 license
+GetDevice.exe
+GetDevice.pyc
 
 __pycache__/
 *.py[cod]

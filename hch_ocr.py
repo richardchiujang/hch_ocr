@@ -21,8 +21,8 @@ def init_args():
     # parser.add_argument('--drc_checkpoint_path', default=r'C:\develop\doc_rotate_classification\output\model.pth', type=str, help='drcmodel wehight file path')
     parser.add_argument('--drc_flag', default=False, action=argparse.BooleanOptionalAction, help='document direction drcmodel enable or disable')
     parser.add_argument('--drc_input_folder', default='work/input', type=str, help='assign img folder path for input path default is work/input')
-    # parser.add_argument('--dbn_model_path', default=r'weights/dbn_model_best_e4_h0p684507037728362_l1p439903035575961.pth',
-    parser.add_argument('--dbn_model_path', default=r'C:\develop\DBNet_pytorch_Wenmu\output\DBNet_resnet18_FPN_DBHead\checkpoint\dbn_model_best_e19_h0.8956742952820212_l0.864123656425947.pth',                        
+    parser.add_argument('--dbn_model_path', default=r'weights/dbn_model_best_e4_h0p684507037728362_l1p439903035575961.pth',
+    # parser.add_argument('--dbn_model_path', default=r'C:\develop\DBNet_pytorch_Wenmu\output\DBNet_resnet18_FPN_DBHead\checkpoint\dbn_model_best_e12_h0.7420886028473502_l0.9898050118375707.pth',                        
                         type=str, help='dbnmodel wehight path')
     parser.add_argument('--dbn_output_folder', default='work/output/inference', type=str, help='img path for ocr result output default is work/output/inference')
     parser.add_argument('--thre', default=0.5, type=float, help='the threshould of dbn post_processing')
@@ -41,6 +41,9 @@ def init_args():
     parser.add_argument('--crnn_return', default=False, action=argparse.BooleanOptionalAction, help='return result mode True')
     parser.add_argument('--log_level', default='info', help='log level \'debug\' or \'info\'(default)')
     parser.add_argument('--while_mode', default=False, action=argparse.BooleanOptionalAction, help='batch mode waiting data in a loop')
+    ### 2024-06-27 因整合windows服務console log會發生錯誤, 透過參數控制是否整合服務 
+    parser.add_argument('--integrate_svc', default=False, action=argparse.BooleanOptionalAction, help='integrate windows service')
+    
     args = parser.parse_args()
     return args
 
@@ -98,6 +101,12 @@ from utils.util import show_img, draw_bbox, save_result, get_file_list, new_draw
 
 import matplotlib.pyplot as plt
 import pathlib
+
+### 2024-06-27 因整合windows服務console log會發生錯誤, 透過參數控制是否整合服務 
+integrate_svc = False
+if args.integrate_svc:
+   integrate_svc = args.integrate_svc
+
 
 def main():
     tStart = time.time() # 計時開始
@@ -208,11 +217,13 @@ def main():
     pass
 
 if __name__ == '__main__':
-    log = Logger('work/log/pythonOCR.log', level=args.log_level)
+    ### 2024-06-27 因整合windows服務console log會發生錯誤, 透過參數控制是否整合服務 
+    log = Logger(filename='work/log/pythonOCR.log', integrate_svc=integrate_svc, level=args.log_level)
     log.logger.info('HCH OCR server start on {}'.format(hostname))
     log.logger.info('pytorch device: {}'.format(device))
     log.logger.info('ocrdebug.ocrdebug: {}'.format(ocrdebug.ocrdebug))
     log.logger.info('crnn_mode: {}'.format(args.crnn_mode))
+    log.logger.info('integrate_svc: {}'.format(args.integrate_svc))
     log.logger.debug('all args: {}'.format(args))
     if args.crnn_mode != 'inference' and args.ocrdebug:
         purge_debug_folder()
@@ -230,15 +241,16 @@ if __name__ == '__main__':
     path_data = r'.\work\wait_data'
     init_drc_flag = args.drc_flag
 
-    # licenseVerify = "VerifyKey.pyc"
-    # if not os.path.exists(licenseVerify):
-    #     print("LICENSE NOT FOUND!")
-    #     sys.exit()
-    # output = subprocess.call(['python', licenseVerify], shell=True, text=True)
-    # if output == 1:
-    #     print("LICENSE INVALID!")
-    #     sys.exit(1)
-    # print("LICENSE VALID!")
+    licenseVerify = "VerifyKey.pyc"
+    if not os.path.exists(licenseVerify):
+        print("LICENSE NOT FOUND!")
+        sys.exit()
+    output = subprocess.call(['python', licenseVerify], shell=True, text=True)
+    if output == 1:
+         print("LICENSE INVALID!")
+         sys.exit(1)
+    print("LICENSE VALID!")
+    
 
     try:
         if not args.while_mode:
@@ -259,11 +271,11 @@ if __name__ == '__main__':
                 files = [f for f in files if f.endswith('.txt')]
 
                 if len(files) == 0:
-                    # log.logger.debug('no file found in folder: {}'.format(r'.\work\wait'))
+                    log.logger.debug('no file found in folder: {}'.format(r'.\work\wait'))
                     time.sleep(1)
                     loop_count += 1
                     if loop_count >= 59:
-                        log.logger.debug('wait folder is empty, still wait reset count.')
+                        log.logger.info('wait folder is empty, still wait reset count.')
                         loop_count = 0
                     continue
                 else:
@@ -289,7 +301,9 @@ if __name__ == '__main__':
                         args.crnn_output_folder = args.drc_input_folder
                         log.logger.info('change processing folder: {}'.format(args.drc_input_folder))
                         try:
+                            log.logger.info('start main process ... ')
                             main()
+                            log.logger.info('start main process DONE!')
                         except:
                             log.logger.exception("Catch an main() exception.", exc_info=True)    
                     
