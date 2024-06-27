@@ -52,6 +52,7 @@ usage: hch_ocr.py [-h] [--drc_config_file DRC_CONFIG_FILE] [--drc_checkpoint_pat
                   [--while_mode | --no-while_mode]
 
 demo example: python hch_ocr.py --drc_flag --ocrdebug --crnn_return --log_level debug 
+
 demo example: python hch_ocr.py --no-drc_flag --ocrdebug --crnn_return --log_level debug 
 
 options:
